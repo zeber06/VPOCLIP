@@ -1,0 +1,155 @@
+# ============================================================================
+# VPOCLIP - konfiguracja eksportu layoutow do DWG i PDF
+# Plik obslugiwany przez VPOCLIP_v3.39_acad.lsp i VPOCLIP_v3.39_brics.lsp.
+# Wymagane pliki instalacyjne umiesc w katalogu C:\VPOCLIP.
+#
+# Wiersze zaczynajace sie znakiem # oraz puste wiersze sa ignorowane.
+# Wartosci logiczne zapisuj jako YES albo NO (wielkosc liter nie ma znaczenia).
+# Rozszerzenia .dwg i .pdf sa dodawane automatycznie, jezeli ich nie podano.
+# ============================================================================
+
+Config_Version=1
+
+[OUTPUT]
+# Tworzenie oczyszczonych plikow DWG.
+Create_DWG=YES
+
+# Tworzenie plikow PDF z ustawien Page Setup danego layoutu.
+Create_PDF=NO
+
+# YES: PDF jest drukowany z rysunku zrodlowego przed podzialem modelu.
+# NO: PDF jest drukowany po podziale i oczyszczeniu modelu.
+# Przy Create_DWG=NO oraz wartosci NO podzial jest wykonywany tylko dla PDF,
+# a kopia robocza jest przywracana przez UNDO po zakonczeniu wydruku.
+# Ustawienie jest ignorowane, gdy Create_PDF=NO.
+PDF_From_Source=YES
+
+# YES: wyniki trafiaja do podfolderu VPOCLIP_export obok pliku LISP.
+# NO: uzywana jest sciezka z User_Export_Path.
+# Nieistniejacy folder wynikowy zostanie utworzony automatycznie.
+Default_Folder=NO
+
+# Ta sciezka jest uzywana tylko przy Default_Folder=NO.
+User_Export_Path=C:\VPOCLIP\VPOCLIP_export
+#User_Export_Path=T:\EPO_P329_S19JL\06_ROBOCZY\11_KON\02_Ekrany\PJW\05_DP\04_PW_[E]\10_STR_[BRD_CST]\02_W22019-EGS-E-000-CST-41002-PCG\05_PDF\07-08-26-export
+#R:\P311_LK85\05_ROBOCZY\KON\01_ROZ\03_Robocze\2026-09-16-Rbp05 do CPK kordynacja planu rozbiórek\VPOCLIP_export
+
+# Szablony nazw sa uzywane tylko przy Process_All_Layouts=YES.
+# Dostepne tokeny:
+#   <source> - nazwa pliku zrodlowego bez rozszerzenia
+#   <layout> - nazwa eksportowanego layoutu
+# Szablon aktywnego formatu musi zawierac token <layout>.
+# Przyklady:
+#   <source>_<layout>
+#   prefix<source>ABCD<layout>sufix
+#   prefix<layout>sufix
+#   <layout>
+#DWG_Name_Template=<source>_<layout>
+#PDF_Name_Template=<source>_<layout>
+DWG_Name_Template=plik<layout>
+PDF_Name_Template=plik<layout>
+
+[PROCESSING]
+# NO: eksportowane sa tylko pozycje z sekcji [TASKS].
+# YES: eksportowane sa wszystkie layouty papieru poza Model.
+# Przy YES sekcja [TASKS] jest ignorowana.
+#
+# Wyznaczanie klucza XREF przy Ignore_XREF=NO:
+#   Process_All_Layouts=NO  - wzorzec pochodzi z 3. kolumny [TASKS].
+#   Process_All_Layouts=YES - wzorzec jest tworzony z 2 pierwszych znakow
+#                             nazwy layoutu, np. GH01 -> *- GH.
+Process_All_Layouts=NO
+
+# NO: przed wydrukiem PDF ladowane sa tylko XREF-y pasujace do klucza
+# zadania, a pozostale sa wyladowywane. Ten sam filtr pozostawia
+# odpowiednie XREF-y w wynikowym DWG.
+#
+# YES: klucz zadania jest ignorowany. Przed PDF ladowane i zachowywane
+# sa wszystkie XREF-y. Gdy rysunek zawiera wiecej niz 8 XREF-ow,
+# VPOCLIP przed startem poprosi o jednorazowe potwierdzenie.
+#
+# XREF-y sa przygotowywane przed PDF niezaleznie od ustawienia
+# PDF_From_Source. Stan jest wykorzystywany ponownie dla kolejnych zadan
+# z tym samym kluczem, aby ograniczyc liczbe operacji Reload/Unload.
+Ignore_XREF=NO
+
+# YES: gdy layout nie ma zadnej poprawnej ramki VPOutline, VPOBATCH
+# tworzy tymczasowe prostokatne ramki bezposrednio z jego rzutni.
+# Ramki i etykiety powstaja tylko w kopii roboczej i sa usuwane przed
+# zapisem wyniku. Rysunek zrodlowy nie jest zmieniany.
+# Istniejace poprawne ramki zawsze maja pierwszenstwo. Osierocone linki
+# VPO_LINK do skasowanych lub nieistniejacych ramek sa usuwane w kopii
+# roboczej, a ramki sa tworzone ponownie. Istniejaca, lecz uszkodzona ramka
+# nadal zatrzymuje zadanie i nie jest automatycznie naprawiana.
+# NO: brak ramek powoduje blad zadania, tak jak w starszych wersjach.
+# LCLIP zawsze uzywa automatycznego tworzenia ramek niezaleznie od tej opcji.
+Auto_Create_Frames=YES
+
+# Warstwy ignorowane podczas czyszczenia.
+# Obiekty na tych warstwach nie sa usuwane ani przycinane poza ramkami.
+# Nazwy i wzorce rozdzielaj srednikiem; dozwolone sa symbole * oraz ?.
+# Wielkosc liter nie ma znaczenia. Pusta wartosc wylacza dodatkowa ochrone.
+# Dla nazw z polskimi znakami uzywaj ? zamiast litery diakrytycznej.
+# Przyklad: _Podzia? na odcinki;DEFPOINTS;*OPIS*;XREF_*
+Ignore_Layers=_Podzial na odcinki
+# Lista layoutow pomijanych przy Process_All_Layouts=YES.
+# Wzorce rozdzielaj srednikiem; dozwolone sa symbole wieloznaczne * i ?.
+# W nazwach z polskimi znakami rowniez stosuj ? zamiast litery diakrytycznej.
+# Pozostaw pusta wartosc, aby niczego nie wykluczac.
+Exclude_Layouts=*TEMP*;*ARCHIWUM*;Layout1
+
+[TASKS]
+# Sekcja jest uzywana tylko przy Process_All_Layouts=NO.
+# Format:
+# nazwa layouta; nazwa pliku wynikowego; wzorzec XREF do pozostawienia
+#
+# Trzecia kolumna jest jednoczesnie kluczem XREF dla PDF i filtrem DWG.
+# Znak * oznacza dowolny ciag znakow. Przyklad *- GH wybiera XREF-y,
+# ktorych nazwa konczy sie tekstem "- GH".
+# Gdy Ignore_XREF=YES, trzecia kolumna jest ignorowana.
+# Przy Process_All_Layouts=YES cala sekcja [TASKS] jest ignorowana.
+nazwa layouta; nazwa pliku; nazwa odnosnika do zostawienia
+#GH01; P00100010-EGS-CDM-085GHXX01-XX-DR-30XX01; *- GH
+#GH02; P00100010-EGS-CDM-085GHXX01-XX-DR-30XX02; *- GH
+#HK01; P00100010-EGS-CDM-085HKXX01-XX-DR-30XX01; *- HK
+#HK02; P00100010-EGS-CDM-085HKXX01-XX-DR-30XX02; *- HK
+#HK03; P00100010-EGS-CDM-085HKXX01-XX-DR-30XX03; *- HK
+#HK04; P00100010-EGS-CDM-085HKXX01-XX-DR-30XX04; *- HK
+#HK05; P00100010-EGS-CDM-085HKXX01-XX-DR-30XX05; *- HK
+#HK06; P00100010-EGS-CDM-085HKXX01-XX-DR-30XX06; *- HK
+#HK07; P00100010-EGS-CDM-085HKXX01-XX-DR-30XX07; *- HK
+#NP01; P00100010-EGS-CDM-085NPXX01-XX-DR-30XX01; *- NP
+#NP02; P00100010-EGS-CDM-085NPXX01-XX-DR-30XX02; *- NP
+#PP01; P00100010-EGS-CDM-085PPXX01-XX-DR-30XX01; *- PP
+#PP02; P00100010-EGS-CDM-085PPXX02-XX-DR-30XX01; *- PP
+#PP03; P00100010-EGS-CDM-085PPXX03-XX-DR-30XX01; *- PP
+#PP04; P00100010-EGS-CDM-085PPXX04-XX-DR-30XX01; *- PP
+#PP05; P00100010-EGS-CDM-085PPXX05-XX-DR-30XX01; *- PP
+#PP06; P00100010-EGS-CDM-085PPXX06-XX-DR-30XX01; *- PP
+#PP07; P00100010-EGS-CDM-085PPXX07-XX-DR-30XX01; *- PP
+#LK1; P00100010-EGS-CDM-085LKXX01-XX-DR-30XX01; *- LK
+#LK2; P00100010-EGS-CDM-085LKXX01-XX-DR-30XX02; *- LK
+#LK3; P00100010-EGS-CDM-085LKXX01-XX-DR-30XX03; *- LK
+#DN1000; DETAL_PLYTY_KOTWIACEJ_DN100; *
+#P00100010-EGS-S00-085PROR13-GF-DR-314001; P00100010-EGS-S00-085PROR13-GF-DR-314001; *
+#P00100010-EGS-S00-085PROR13-XX-DR-314001; P00100010-EGS-S00-085PROR13-XX-DR-314001; *
+#P00100010-EGS-S00-085PROR13-GF-DR-314011; P00100010-EGS-S00-085PROR13-GF-DR-314011; *
+#P00100010-EGS-S00-085PROR13-XX-DR-314011; P00100010-EGS-S00-085PROR13-XX-DR-314011; *
+#P00100010-EGS-S00-085PROR13-XX-DR-314012; P00100010-EGS-S00-085PROR13-XX-DR-314012; *
+#7001; W22019-EGS-E-000-CST-41002-STL-7001; *
+#7002; W22019-EGS-E-000-CST-41002-STL-7002; *
+#7003; W22019-EGS-E-000-CST-41002-STL-7003; *
+#7010; W22019-EGS-E-000-CST-41002-STL-7010; *
+#W22019-EGS-E-000-CST-41002-DRW-1001.dwg
+#1001; W22019-EGS-E-000-CST-41002-DRW-1001; *
+#1002; W22019-EGS-E-000-CST-41002-DRW-1002; *
+#1003; W22019-EGS-E-000-CST-41002-DRW-1003; *
+RZ01; P00100010-EGS-CDM-085RZXX01-XX-DR-30XX01; *- RZ
+#RZ02; P00100010-EGS-CDM-085RZXX01-XX-DR-30XX02; *- RZ
+#RZ03; P00100010-EGS-CDM-085RZXX01-XX-DR-30XX03; *- RZ
+#RZ04; P00100010-EGS-CDM-085RZXX01-XX-DR-30XX04; *- RZ
+#RZ06; P00100010-EGS-CDM-085RZXX01-XX-DR-30XX06; *- RZ
+#TZ01; P00100010-EGS-CDM-085TZXX01-XX-DR-30XX01; *- TZ
+#ZZ01; P00100010-EGS-CDM-085ZZXX01-XX-DR-30XX01; *- ZZ
+#ZZ02; P00100010-EGS-CDM-085ZZXX01-XX-DR-30XX02; *- ZZ
+#ZZ03; P00100010-EGS-CDM-085ZZXX01-XX-DR-30XX03; *- ZZ
